@@ -23,7 +23,8 @@ wallHitTable = zeros(nMolecules,3);
 d = 0.1;
 
 % Particle mass
-mass = 2;
+mass = 1;
+vF=5;
 
 % The wall
 left = 0;
@@ -55,7 +56,7 @@ for i = 1:dimensionSize
 		count = count+1;
 		pos(count,1) = i;
 		pos(count,2) = j;
-		theta = 2*pi*rand(1,1);
+		theta = vF*2*pi*rand(1,1);
 		vel(count,1) = cos(theta);
 		vel(count,2) = sin(theta);
 	end
@@ -151,9 +152,11 @@ for frame = 2:nCollisions
 		pos = pos+vel*dt;
 
 		% Find post collision velocities and update
+        % update here mas is canceling out each other to all equal mass 
+        massHat= 2*mass*mass/(mass+mass);
 		rHat = (pos(parB,:)-pos(parA,:))/norm(pos(parB,:)-pos(parA,:));
-		va = vel(parA,:)-dot((vel(parA,:)-vel(parB,:)),rHat)*rHat;
-		vb = vel(parB,:)+dot((vel(parA,:)-vel(parB,:)),rHat)*rHat;
+		va = vel(parA,:)-dot((vel(parA,:)-vel(parB,:)),rHat)*rHat*massHat/mass;
+		vb = vel(parB,:)+dot((vel(parA,:)-vel(parB,:)),rHat)*rHat*massHat/mass;
 		
 		% Update velocities
 		vel(parA,:) = va;
