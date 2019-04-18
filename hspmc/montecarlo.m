@@ -2,7 +2,7 @@ close all;clear all;
 
 N = 8^3; % total number of spheres (best 9^3 or more)
 phi = .05; % volume fraction 
-zeta = .001; % maximum displacement (best zeta=.005 for phi=.45 and zeta=.033 for phi=.2)
+zeta = .005; % maximum displacement (best zeta=.005 for phi=.45 and zeta=.033 for phi=.2)
 iter = 10000; % number of passes to make over all particles (best 7000 or more)
 coords=zeros(N,3); % list of the 3D positions of all particles
 overlap=(6*phi/(pi*N))^(1/3); % set this to diam;
@@ -21,9 +21,9 @@ end
 h = waitbar(0,'Please wait...');
 s = clock;
 
+freeM = zeros(iter-1000,N);
 accepts=0;
 rejects=0;
-acceptTime=zeros(1,iter);
 rejectTime=[];
 for ii=1:iter
     for jj=1:N
@@ -65,8 +65,9 @@ for ii=1:iter
             accepts=accepts+1;
         else
             rejects=rejects+1; % overlap
-            rejectTime= [rejectTime;ii];
-            
+            if ii > 1000
+                freeM(ii,jj)=1;
+            end
             
         end
     end
@@ -79,5 +80,25 @@ for ii=1:iter
 end
 disp(accepts/(accepts+rejects));
 scatter3(coords(:,1),coords(:,2),coords(:,3),'filled'); 
+
 % uncomment line above to show final lattice
 
+% plot hist
+freeTime=[];
+for i=1:N
+    freeTime=[freeTime; diff(find(freeM(:,i)==1))];
+end
+freeTime(freeTime > 1000) = [];
+figure(1)
+histogram(freeTime,'Normalization','probability','NumBins',100)
+xlabel('Time')
+ylabel('prob')
+xlim([0,1000])
+fname = sprintf('plot_%d_%f_%f.png', N,overlap,zeta)
+saveas(gcf,fname)
+
+fname = sprintf('data_%d_%f_%f.png', N,overlap,zeta)
+fid =fopen(fname, 'w')
+fprintf(fid, "%f\n",freeTime)
+fclose(fid)
+    
